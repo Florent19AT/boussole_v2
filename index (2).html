@@ -1,0 +1,1227 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Boussole - Guide du CDI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --lavender:#EDE7F6;
+    --mint:#E3F2E1;
+    --peach:#FFE8D6;
+    --ink:#3A3845;
+    --muted:#6B6877;
+    --white:#FFFFFF;
+    --accent:#8B7FD1;
+    --accent-dark:#6F62B8;
+    --radius-lg:24px;
+    --radius-md:16px;
+    --radius-pill:999px;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;margin:0;}
+  body{
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    background:linear-gradient(160deg,var(--lavender) 0%, var(--mint) 100%);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:16px;
+    color:var(--ink);
+  }
+  .chat-card{
+    width:100%;
+    max-width:500px;
+    height:min(700px, 94vh);
+    background:var(--white);
+    border-radius:var(--radius-lg);
+    box-shadow:0 12px 32px rgba(58,56,69,0.14);
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+  }
+  .chat-header{
+    background:linear-gradient(120deg, var(--accent) 0%, #A89AE0 100%);
+    color:#fff;
+    padding:18px 20px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    flex-shrink:0;
+  }
+  .chat-header .icon{width:38px;height:38px;flex-shrink:0;}
+  .chat-header h1{font-family:'Baloo 2',cursive;font-size:20px;margin:0;font-weight:700;}
+  .chat-header p{margin:2px 0 0;font-size:12.5px;opacity:0.92;}
+  .chat-messages{
+    flex:1;
+    overflow-y:auto;
+    padding:18px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .message{
+    max-width:86%;
+    padding:10px 14px;
+    border-radius:var(--radius-md);
+    font-size:14px;
+    line-height:1.55;
+  }
+  .message.bot{
+    align-self:flex-start;
+    background:var(--mint);
+    border-bottom-left-radius:4px;
+  }
+  .message.user{
+    align-self:flex-end;
+    background:var(--peach);
+    border-bottom-right-radius:4px;
+  }
+  .message strong{color:var(--accent-dark);}
+  .message a{color:var(--accent-dark);text-decoration:underline;}
+  .message.typing{display:flex;gap:4px;align-items:center;padding:14px;}
+  .message.typing span{width:6px;height:6px;border-radius:50%;background:var(--muted);animation:bounce 1.2s infinite ease-in-out;}
+  .message.typing span:nth-child(2){animation-delay:0.15s;}
+  .message.typing span:nth-child(3){animation-delay:0.3s;}
+  @keyframes bounce{0%,80%,100%{transform:translateY(0);opacity:0.4;}40%{transform:translateY(-4px);opacity:1;}}
+  @media (prefers-reduced-motion: reduce){
+    .message.typing span{animation:none;opacity:0.7;}
+    .quick-reply{transition:none;}
+  }
+  .quick-replies{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    padding:0 18px 14px;
+    flex-shrink:0;
+  }
+  .quick-reply{
+    font-family:'Inter',sans-serif;
+    font-size:13px;
+    padding:8px 14px;
+    border-radius:var(--radius-pill);
+    border:1.5px solid var(--accent);
+    background:#fff;
+    color:var(--accent-dark);
+    cursor:pointer;
+    transition:transform 0.15s ease, background 0.15s ease;
+  }
+  .quick-reply:hover{background:var(--lavender);transform:translateY(-1px);}
+  .quick-reply:focus-visible{outline:2px solid var(--accent-dark);outline-offset:2px;}
+  .chat-input-area{
+    border-top:1px solid #EFEAF7;
+    padding:12px 14px;
+    display:flex;
+    gap:8px;
+    flex-shrink:0;
+  }
+  .chat-input-area input{
+    flex:1;
+    border:1.5px solid #E3DEF2;
+    border-radius:var(--radius-pill);
+    padding:10px 16px;
+    font-size:14px;
+    font-family:inherit;
+    outline:none;
+  }
+  .chat-input-area input:focus{border-color:var(--accent);}
+  .chat-input-area button{
+    width:42px;height:42px;flex-shrink:0;
+    border-radius:50%;
+    border:none;
+    background:var(--accent);
+    color:#fff;
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;
+    transition:background 0.15s ease;
+  }
+  .chat-input-area button:hover{background:var(--accent-dark);}
+  .chat-input-area button:focus-visible{outline:2px solid var(--accent-dark);outline-offset:2px;}
+  @media (max-width:480px){
+    body{padding:0;}
+    .chat-card{height:100vh;border-radius:0;max-width:100%;}
+  }
+</style>
+</head>
+<body>
+
+<div class="chat-card">
+  <div class="chat-header">
+    <svg class="icon" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <circle cx="20" cy="20" r="18" stroke="white" stroke-width="2" opacity="0.9"/>
+      <polygon points="20,8 24,20 20,32 16,20" fill="white" opacity="0.95"/>
+      <circle cx="20" cy="20" r="2.5" fill="#8B7FD1"/>
+    </svg>
+    <div>
+      <h1>Boussole</h1>
+      <p>Ton guide pour explorer le CDI du collège Véron de Forbonnais</p>
+    </div>
+  </div>
+
+  <div class="chat-messages" id="chat-messages" aria-live="polite"></div>
+  <div class="quick-replies" id="quick-replies"></div>
+
+  <form class="chat-input-area" id="chat-form">
+    <input type="text" id="chat-input" placeholder="Écris ta question ici..." autocomplete="off" aria-label="Ta question" />
+    <button type="button" id="chat-send" aria-label="Envoyer">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M3 11L21 3L13 21L11 13L3 11Z" fill="currentColor"/>
+      </svg>
+    </button>
+  </form>
+</div>
+
+<noscript>Ce guide a besoin de JavaScript activé pour fonctionner.</noscript>
+
+<script>
+/* =========================================================================
+   BOUSSOLE — Chatbot du CDI du collège Véron de Forbonnais (72)
+   Version enrichie avec les contenus du catalogue ESIDOC
+   ========================================================================= */
+
+const BASE_URL = 'https://0720053s.esidoc.fr';
+
+// Mémoire de contexte très légère : permet d'enchaîner sur le message suivant
+// quand on a posé une question ("un exposé sur quel sujet ?"). Réinitialisée
+// dès qu'elle est consommée ou qu'un bouton de réponse rapide est cliqué.
+let pendingContext = null;
+
+const COTES = {
+  fiction: [
+    { code: 'R',   label: 'Roman',      format: 'R + 3 premières lettres de l\'auteur',  desc: 'Histoires réalistes, d\'aventure, sentimentales... Ex : R DUM pour Alexandre Dumas', exemple: 'Ex : R DUM pour un roman de Dumas' },
+    { code: 'C',   label: 'Conte',      format: 'C + 3 premières lettres de l\'auteur',  desc: 'Récits traditionnels, mythes, légendes', exemple: 'Ex : C PER pour Perrault' },
+    { code: 'A',   label: 'Album',      format: 'A + 3 premières lettres de l\'auteur',  desc: 'Albums illustrés', exemple: 'Ex : A MOR pour un album' },
+    { code: 'T',   label: 'Théâtre',    format: 'T + 3 premières lettres de l\'auteur',  desc: 'Pièces à lire ou à jouer', exemple: 'Ex : T MOL pour Molière' },
+    { code: 'P',   label: 'Poésie',     format: 'P + 3 premières lettres de l\'auteur',  desc: 'Recueils de poèmes', exemple: 'Ex : P RIM pour Rimbaud' },
+    { code: 'N',   label: 'Nouvelle',   format: 'N + 3 premières lettres de l\'auteur',  desc: 'Nouvelles et récits courts', exemple: 'Ex : N MAU pour Maupassant' },
+    { code: 'BD',  label: 'BD / Manga', format: 'BD + 3 premières lettres de l\'auteur', desc: 'Bandes dessinées et mangas', exemple: 'Ex : BD AST pour Astérix' },
+  ],
+  documentaires: [
+    { code: '000', label: 'Généralités & informatique', desc: 'Informatique, encyclopédies générales, journaux' },
+    { code: '100', label: 'Philosophie & psychologie',  desc: 'Penser, sentiments, comportements humains' },
+    { code: '200', label: 'Religions & mythologies',    desc: 'Croyances, dieux, rites du monde entier' },
+    { code: '300', label: 'Sciences sociales',          desc: 'Société, droit, politique, économie, métiers, orientation' },
+    { code: '400', label: 'Langues',                    desc: 'Apprendre et comprendre les langues' },
+    { code: '500', label: 'Sciences',                   desc: 'Maths, physique, SVT, astronomie, chimie...' },
+    { code: '600', label: 'Techniques & santé',         desc: 'Médecine, machines, technologie, cuisine...' },
+    { code: '700', label: 'Arts, sports & loisirs',     desc: 'Dessin, musique, cinéma, sport, jeux...' },
+    { code: '800', label: 'Littérature',                desc: 'Étude des textes, auteurs, histoire littéraire' },
+    { code: '900', label: 'Histoire & géographie',      desc: 'Le passé, les pays du monde, biographies' }
+  ]
+};
+
+// Thèmes courants → cote(s) Dewey indicative(s) (3 chiffres). Liste non exhaustive,
+// pensée pour couvrir les recherches fréquentes des élèves de collège.
+const THEMES_DOC = [
+  { match: ['ecologie','environnement','climat','rechauffement','developpement durable','biodiversite','pollution'], cotes: ['577','363'], label: "l'écologie et l'environnement", motbis: ['Écologie','Environnement','Pollution'] },
+  { match: ['guerre','conflit mondial','seconde guerre mondiale','premiere guerre mondiale','resistance','shoah','genocide','deportation'], cotes: ['940'], label: 'les guerres et conflits du XXe siècle', motbis: ['Guerre mondiale','Résistance','Déportation'] },
+  { match: ['espace','astronomie','univers','planete','etoile','systeme solaire','galaxie','astronaute'], cotes: ['520'], label: "l'espace et l'astronomie", motbis: ['Astronomie','Espace','Système solaire'] },
+  { match: ['animaux','animal','faune','requin','dinosaure','dinosaures'], cotes: ['590','560'], label: 'les animaux', motbis: ['Animal','Faune','Espèce animale'] },
+  { match: ['corps humain','maladie','sante','medecine','virus','anatomie','epidemie'], cotes: ['610'], label: 'le corps humain et la santé', motbis: ['Corps humain','Santé','Maladie'] },
+  { match: ['sport','foot','football','rugby','basket','jeux olympiques'], cotes: ['796'], label: 'le sport', motbis: ['Sport','Jeux olympiques'] },
+  { match: ['mythologie','dieux grecs','dieu egyptien','legende','mythe','olympe'], cotes: ['200','292'], label: 'la mythologie', motbis: ['Mythologie','Dieu (mythologie)','Légende'] },
+  { match: ['metier','metiers','orientation scolaire','onisep','avenir professionnel'], cotes: ['371'], label: "les métiers et l'orientation", motbis: ['Orientation scolaire','Métier','Profession'] },
+  { match: ['harcelement','violence scolaire','bullying'], cotes: ['302','371'], label: 'le harcèlement', motbis: ['Harcèlement','Violence scolaire'] },
+  { match: ['puberte','sexualite','adolescence'], cotes: ['613'], label: 'la puberté et la sexualité', motbis: ['Puberté','Sexualité','Adolescence'] },
+  { match: ['drogue','addiction','alcool','tabac'], cotes: ['362','613'], label: 'les addictions', motbis: ['Addiction','Drogue','Alcoolisme'] },
+  { match: ['racisme','discrimination'], cotes: ['305'], label: 'le racisme et les discriminations', motbis: ['Racisme','Discrimination'] },
+  { match: ['informatique','programmation','intelligence artificielle','robot','robots'], cotes: ['004','005','629'], label: "l'informatique et les robots", motbis: ['Informatique','Intelligence artificielle','Robotique'] },
+  { match: ['musique','instrument de musique'], cotes: ['780'], label: 'la musique', motbis: ['Musique','Instrument de musique'] },
+  { match: ['cinema','film'], cotes: ['791'], label: 'le cinéma', motbis: ['Cinéma','Film'] },
+  { match: ['histoire de france'], cotes: ['944'], label: "l'histoire de France", motbis: ['Histoire de France'] },
+  { match: ['prehistoire','homme prehistorique'], cotes: ['930','569'], label: 'la préhistoire', motbis: ['Préhistoire','Homme préhistorique'] },
+  { match: ['egypte ancienne','pharaon','momie'], cotes: ['932'], label: "l'Égypte ancienne", motbis: ['Égypte ancienne','Pharaon'] },
+  { match: ['moyen age','chevalier','chateau fort'], cotes: ['940'], label: 'le Moyen Âge', motbis: ['Moyen Âge','Chevalerie'] },
+  { match: ['esclavage'], cotes: ['326'], label: "l'esclavage", motbis: ['Esclavage'] },
+  { match: ['immigration','migrant'], cotes: ['304'], label: "l'immigration", motbis: ['Immigration','Migration'] },
+  { match: ['handicap'], cotes: ['362'], label: 'le handicap', motbis: ['Handicap'] },
+  { match: ['alimentation','nutrition','cuisine'], cotes: ['641','613'], label: "l'alimentation et la nutrition", motbis: ['Alimentation','Nutrition'] },
+  { match: ['philosophie'], cotes: ['100'], label: 'la philosophie', motbis: ['Philosophie'] },
+  { match: ['psychologie','emotion','sentiment'], cotes: ['150'], label: 'la psychologie et les émotions', motbis: ['Psychologie','Émotion'] },
+  { match: ['mathematique'], cotes: ['510'], label: 'les mathématiques', motbis: ['Mathématiques'] },
+  { match: ['physique chimie','physique','chimie'], cotes: ['530','540'], label: 'la physique et la chimie', motbis: ['Physique','Chimie'] },
+  { match: ['geographie','pays du monde'], cotes: ['910'], label: 'la géographie', motbis: ['Géographie','Pays'] },
+];
+
+// Genres de fiction courants → orientation vers les bonnes sections/filtres.
+// (Les fictions sont cotées par auteur, pas par genre, contrairement aux documentaires.)
+const GENRES_FICTION = [
+  { match: ['policier','enquete','detective','polar'], label: 'Policier', section: BASE_URL + '/decouvrir/livresfiction2' },
+  { match: ['fantastique','vampire','sorcier','sorciere','magie'], label: 'Fantastique', section: BASE_URL + '/decouvrir/livresfiction2' },
+  { match: ['science fiction','anticipation','futuriste','dystopie'], label: 'Science-fiction', section: BASE_URL + '/decouvrir/livresfiction2' },
+  { match: ['amour','romance','sentimental'], label: 'Romance', section: BASE_URL + '/decouvrir/livresfiction' },
+  { match: ['aventure'], label: 'Aventure', section: BASE_URL + '/decouvrir/livresfiction' },
+  { match: ['horreur','epouvante','livre qui fait peur'], label: 'Horreur / épouvante', section: BASE_URL + '/decouvrir/livresfiction2' },
+  { match: ['humour','comique','livre drole'], label: 'Humour', section: BASE_URL + '/decouvrir/livresfiction' },
+  { match: ['roman historique','epoque'], label: 'Roman historique', section: BASE_URL + '/decouvrir/livresfiction' },
+];
+
+const DECOUVRIR_SECTIONS = [
+  { label: 'Romans, BD... (fiction)',       url: BASE_URL + '/decouvrir/livresfiction',  desc: 'Romans, contes, théâtre, poésie...' },
+  { label: 'Policiers, fantastiques...',    url: BASE_URL + '/decouvrir/livresfiction2', desc: 'Genres particuliers de fiction' },
+  { label: 'Livres documentaires',          url: BASE_URL + '/decouvrir/livresdoc',      desc: 'Tous les documentaires du CDI' },
+  { label: 'Dictionnaires, encyclopédies',  url: BASE_URL + '/decouvrir/usuels',         desc: 'Ouvrages de référence (usuels)' },
+  { label: 'Manuels scolaires',             url: BASE_URL + '/decouvrir/manuels',        desc: 'Manuels des différentes matières' },
+  { label: 'Revues & magazines',            url: BASE_URL + '/decouvrir/revjourmag',     desc: 'Presse jeunesse et magazines' },
+];
+
+const ESPACE_ELEVES = [
+  { label: '📚 Livres à écouter',       url: BASE_URL + '/site/bienvenue-au-cdi-espace-eleves/trouver/des-livres-a-ecouter' },
+  { label: '📖 Dictionnaires en ligne', url: BASE_URL + '/site/bienvenue-au-cdi-espace-eleves/trouver/des-dictionnaires-et-des-encyclopedies' },
+  { label: '🌐 Bibliothèques numériques',url: BASE_URL + '/site/bienvenue-au-cdi-espace-eleves/trouver/des-bibliotheques-numeriques' },
+  { label: '🖼️ Images et vidéos',      url: BASE_URL + '/site/bienvenue-au-cdi-espace-eleves/trouver/des-images-et-des-videos' },
+  { label: '💡 Suggestions d\'achat',   url: BASE_URL + '/site/bienvenue-au-cdi-espace-eleves/informations-pratiques/suggestions-d-achat' },
+  { label: '🎲 Jeux de société',        url: BASE_URL + '/site/bienvenue-au-cdi-espace-eleves/decouvrir-2/les-jeux-de-societe-au-cdi' },
+  { label: '⭐ Coups de cœur',          url: BASE_URL + '/site/bienvenue-au-cdi-espace-eleves/decouvrir-2/les-coups-de-coeur-du-cdi' },
+  { label: '🗓️ Actualités du CDI',     url: BASE_URL + '/site/bienvenue-au-cdi-espace-eleves/decouvrir-2/les-actualites-du-cdi' },
+];
+
+const APPRENDRE = [
+  { label: '🔍 Chercher sur Internet', url: BASE_URL + '/site/bienvenue-au-cdi-espace-eleves/apprendre-a/chercher-sur-internet' },
+  { label: '📝 Citer ses sources',     url: BASE_URL + '/site/bienvenue-au-cdi-espace-eleves/apprendre-a/citer-ses-sources' },
+  { label: '📚 Utiliser la base du CDI', url: BASE_URL + '/site/bienvenue-au-cdi-espace-eleves/apprendre-a/utiliser-la-base-du-cdi' },
+  { label: '🎮 Réviser l\'EMI (6e)',   url: BASE_URL + '/site/bienvenue-au-cdi-espace-eleves/apprendre-a/un-serious-game-pour-reviser' },
+];
+
+const INFOS_PRATIQUES = [
+  { label: '🕐 Horaires & personnel',  url: BASE_URL + '/site/bienvenue-au-cdi-espace-eleves/informations-pratiques/les-horaires-le-personnel' },
+  { label: '📋 Conditions de prêt',    url: BASE_URL + '/site/bienvenue-au-cdi-espace-eleves/informations-pratiques/les-conditions-de-pret' },
+  { label: '📏 Règles de vie au CDI',  url: BASE_URL + '/site/bienvenue-au-cdi-espace-eleves/informations-pratiques/les-regles-de-vie-au-cdi' },
+  { label: '🏛️ Le lieu & équipements', url: BASE_URL + '/site/bienvenue-au-cdi-espace-eleves/informations-pratiques/le-lieu-et-les-equipements-du-cdi' },
+  { label: '👩‍🏫 Missions du prof-doc', url: BASE_URL + '/site/bienvenue-au-cdi-espace-eleves/informations-pratiques/les-missions-du-professeur-documentaliste' },
+];
+
+const MAIN_MENU = [
+  { label: '🔍 Rechercher dans le catalogue', intent: 'recherche_choix' },
+  { label: '📚 Trouver un livre (cotes)',      intent: 'cotes_general' },
+  { label: '🌐 Ressources en ligne',           intent: 'ressources_en_ligne' },
+  { label: '🗂️ Découvrir le fonds',           intent: 'decouvrir_fonds' },
+  { label: '🏫 Infos pratiques CDI',           intent: 'infos_pratiques' },
+  { label: '📖 Apprendre à faire des recherches', intent: 'apprendre' },
+];
+
+function listCotesFiction(){
+  return COTES.fiction.map(c =>
+    `• <strong>${c.code}</strong> — ${c.label} : ${c.desc}<br><em style="font-size:12px;color:#6B6877;">${c.format}</em>`
+  ).join('<br>');
+}
+
+function listCotesDoc(){
+  return COTES.documentaires.map(c =>
+    `• <strong>${c.code}</strong> — ${c.label} : ${c.desc}`
+  ).join('<br>');
+}
+
+// ── GUIDAGE THÉMATIQUE (documentaires + fiction) ────────────────────────────
+
+function domainForCode(code){
+  const hundred = code[0] + '00';
+  const entry = COTES.documentaires.find(c => c.code === hundred);
+  return entry ? entry.label : '';
+}
+
+// ── TOLÉRANCE AUX FAUTES DE FRAPPE / ORTHOGRAPHE ────────────────────────────
+// Public collégien : "écologi", "fantastik"... doivent quand même être reconnus.
+// On calcule une distance d'édition (Levenshtein) et on tolère quelques
+// caractères d'écart selon la longueur du mot, sans jamais le signaler à l'élève.
+
+function levenshtein(a, b){
+  const m = a.length, n = b.length;
+  if (m === 0) return n;
+  if (n === 0) return m;
+  const dp = new Array(n + 1);
+  for (let j = 0; j <= n; j++) dp[j] = j;
+  for (let i = 1; i <= m; i++) {
+    let prev = dp[0];
+    dp[0] = i;
+    for (let j = 1; j <= n; j++) {
+      const tmp = dp[j];
+      dp[j] = a[i - 1] === b[j - 1] ? prev : 1 + Math.min(prev, dp[j], dp[j - 1]);
+      prev = tmp;
+    }
+  }
+  return dp[n];
+}
+
+function maxTypoDistance(word){
+  if (word.length <= 5) return 1;
+  if (word.length <= 10) return 2;
+  return 3;
+}
+
+// Cherche "keyword" (mot ou expression) dans "text" en tolérant quelques
+// fautes de frappe. Compare le mot-clé à chaque fenêtre de mots de même
+// longueur dans le texte (ex: "ecologi" comparé à "ecologie" → distance 1 → OK).
+function fuzzyIncludes(text, keyword){
+  if (text.includes(keyword)) return true;
+  const kwWords = keyword.split(' ').filter(Boolean);
+  const textWords = text.split(/\s+/).filter(Boolean);
+  const windowSize = kwWords.length;
+  for (let i = 0; i <= textWords.length - windowSize; i++) {
+    const windowStr = textWords.slice(i, i + windowSize).join(' ');
+    if (levenshtein(windowStr, keyword) <= maxTypoDistance(keyword)) return true;
+  }
+  return false;
+}
+
+function findDocTheme(t){
+  return THEMES_DOC.find(theme => theme.match.some(k => fuzzyIncludes(t, k))) || null;
+}
+
+function findFictionGenre(t){
+  return GENRES_FICTION.find(genre => genre.match.some(k => fuzzyIncludes(t, k))) || null;
+}
+
+// Construit une suggestion de mots-clés / équation booléenne à tester dans le
+// cartouche de recherche. Ce n'est qu'une PROPOSITION indicative (le chatbot
+// n'a pas accès au contenu réel du fonds) basée sur le principe d'indexation
+// par descripteurs (type Motbis, utilisé par BCDI/e-sidoc).
+// Accroche une relance à une réponse "terminale" (qui ne posait pas déjà de
+// question) : on ne laisse jamais l'élève sans savoir s'il peut continuer.
+// On retire le bouton "Retour au menu" basique pour le remplacer par une
+// formulation plus engageante, tout en gardant les boutons d'action utiles.
+function withFollowUp(resp){
+  const kept = (resp.next || []).filter(item => item.intent !== 'menu');
+  return {
+    text: resp.text + `<br><br>Est-ce que ça répond à ta recherche, ou tu voulais autre chose ? Je peux continuer à t'aider 😊`,
+    next: [
+      ...kept,
+      { label: '✅ Oui, ça me suffit !',      intent: 'merci' },
+      { label: '🔍 Je cherche autre chose',  intent: 'menu' },
+    ]
+  };
+}
+
+function buildKeywordSuggestion(motbis){
+  if (!motbis || motbis.length === 0) return '';
+  if (motbis.length === 1) {
+    return `<strong>${motbis[0]}</strong>`;
+  }
+  const orPart = motbis.slice(0, 2).join(' OU ');
+  let html = `<strong>${orPart}</strong> <span style="font-size:11px;color:#6B6877;">(OU = élargit aux synonymes/notions proches, pour ne rien manquer)</span>`;
+  if (motbis.length > 2) {
+    html += `<br><strong>${motbis[0]} ET ${motbis[2]}</strong> <span style="font-size:11px;color:#6B6877;">(ET = croise deux notions, pour préciser si trop de résultats)</span>`;
+  }
+  return html;
+}
+
+// ── GUIDAGE THÉMATIQUE CONVERSATIONNEL ──────────────────────────────────────
+// Plutôt que de tout donner d'un coup, on pose une question courte pour cerner
+// le besoin, puis on rapproche la réponse étape par étape. Public collégien
+// (10-15 ans) → phrases courtes, ton direct, une question à la fois.
+
+function buildThemeDocResponse(theme){
+  return {
+    text: `Pour <strong>${theme.label}</strong>, tu cherches ça pour un exposé (documentaire), ou plutôt une histoire (roman, BD...) sur ce sujet ? 🤔`,
+    next: [
+      { label: '📘 Un documentaire',        action: () => buildThemeDocAnswer(theme) },
+      { label: '📖 Un roman ou une BD',     action: () => buildThemeFictionAnswer(theme) },
+      { label: '🤷 Les deux / je sais pas', action: () => buildThemeBothAnswer(theme) },
+    ]
+  };
+}
+
+function buildThemeDocAnswer(theme){
+  const cotesHtml = theme.cotes.map(c => `<strong>${c}</strong> (${domainForCode(c)})`).join(' ou ');
+  return {
+    text: `📚 Direction le rayon coté ${cotesHtml} ! ⚠️ C'est indicatif (ça peut varier un peu selon le livre), et il manque les 3 lettres de l'auteur — une recherche dans le catalogue te le confirmera.<br><br>Tu veux un coup de pouce avec des mots-clés à taper dans la recherche ?`,
+    next: [
+      { label: '🔍 Oui, montre-moi',     action: () => buildKeywordReveal(theme.motbis) },
+      { label: '🎯 Recherche avancée',   intent: 'recherche_avancee' },
+      { label: '⬅️ Retour au menu',      intent: 'menu' },
+    ]
+  };
+}
+
+function buildThemeFictionAnswer(theme){
+  return {
+    text: `📖 Pas de souci ! Les romans et BD sont rangés par <strong>auteur</strong>, pas par thème (cote R ou BD + 3 lettres de l'auteur) — donc impossible de te donner une cote précise.<br><br>Bonne nouvelle : le catalogue permet aussi de chercher par mot-clé/sujet, même pour les histoires. Tu veux un mot-clé à essayer ?`,
+    next: [
+      { label: '🔍 Oui, montre-moi',     action: () => buildKeywordReveal(theme.motbis) },
+      { label: '🎯 Recherche avancée',   intent: 'recherche_avancee' },
+      { label: '⬅️ Retour au menu',      intent: 'menu' },
+    ]
+  };
+}
+
+function buildThemeBothAnswer(theme){
+  const cotesHtml = theme.cotes.map(c => `<strong>${c}</strong>`).join(' ou ');
+  return {
+    text: `Pas de souci, voici les deux pistes en bref :<br>📚 Documentaire → rayon coté ${cotesHtml}<br>📖 Roman/BD → classé par auteur, donc cherche plutôt par mot-clé<br><br>Tu veux un mot-clé à tester dans la recherche ?`,
+    next: [
+      { label: '🔍 Oui, montre-moi',     action: () => buildKeywordReveal(theme.motbis) },
+      { label: '🎯 Recherche avancée',   intent: 'recherche_avancee' },
+      { label: '⬅️ Retour au menu',      intent: 'menu' },
+    ]
+  };
+}
+
+function buildKeywordReveal(motbis){
+  const keywordHtml = buildKeywordSuggestion(motbis);
+  return withFollowUp({
+    text: `💡 Dans le cartouche de recherche, essaie :<br>${keywordHtml}<br><br><span style="font-size:12px;color:#6B6877;">(Suggestion indicative — je n'ai pas accès au contenu exact du fonds, mais e-sidoc indexe les documents par mots-clés sujets, donc ça aide beaucoup !)</span>`,
+    next: [
+      { label: '🎯 Lancer la recherche avancée', intent: 'recherche_avancee' },
+    ]
+  });
+}
+
+function buildFictionGenreResponse(genre){
+  return {
+    text: `${genre.label}, j'adore ! 😊 Tu préfères un <strong>roman</strong>, une <strong>BD/manga</strong>, ou ça t'est égal ?`,
+    next: [
+      { label: '📕 Un roman',   action: () => buildGenreAnswer(genre, 'roman') },
+      { label: '💥 BD/manga',  action: () => buildGenreAnswer(genre, 'bd') },
+      { label: '🤷 Peu importe', action: () => buildGenreAnswer(genre, 'any') },
+    ]
+  };
+}
+
+function buildGenreAnswer(genre, format){
+  const coteLine = format === 'bd'
+    ? `Cote : <strong>BD</strong> + 3 lettres de l'auteur.<br>`
+    : format === 'roman'
+      ? `Cote : <strong>R</strong> + 3 lettres de l'auteur.<br>`
+      : `Romans → cote <strong>R</strong>, BD/manga → cote <strong>BD</strong> (+ 3 lettres de l'auteur dans les deux cas).<br>`;
+  return withFollowUp({
+    text: `📚 Pour du <strong>${genre.label}</strong> :<br>${coteLine}Le genre n'apparaît pas dans la cote (seulement l'auteur), donc le plus simple :<br>` +
+      `• Filtre <strong>Genre : ${genre.label}</strong> en recherche avancée<br>` +
+      `• Ou direct la section <a href="${genre.section}" target="_blank">${genre.label}</a><br><br>` +
+      `💡 Mot-clé à tester dans la recherche : <strong>${genre.label}</strong>`,
+    next: [
+      { label: '🎯 Recherche avancée',              intent: 'recherche_avancee' },
+      { label: '📚 Comprendre les cotes fiction',   intent: 'cotes_fiction' },
+    ]
+  });
+}
+
+const RESPONSES = {
+
+  intro: {
+    text: "Bonjour ! 🧭 Je m'appelle <strong>Boussole</strong>, le guide du CDI du <strong>collège Véron de Forbonnais</strong> à Saint-Cosme-en-Vairais. Je suis là pour t'aider à naviguer dans le catalogue, trouver des ressources et découvrir tout ce que propose le CDI. Pose-moi une question ou choisis une option ci-dessous !",
+    next: MAIN_MENU
+  },
+
+  salutation: {
+    text: "Bonjour ! 👋 Bienvenue au CDI du collège Véron de Forbonnais. Comment puis-je t'aider aujourd'hui ?",
+    next: MAIN_MENU
+  },
+
+  merci: {
+    text: "Avec plaisir ! 😊 N'hésite pas à revenir si tu as d'autres questions. Bonne lecture !",
+    next: [{ label: '⬅️ Retour au menu', intent: 'menu' }]
+  },
+
+  menu: {
+    text: "Voici comment je peux t'aider :",
+    next: MAIN_MENU
+  },
+
+  // ── RECHERCHE ──────────────────────────────────────────────────────────────
+
+  recherche_choix: {
+    text: "Le catalogue du CDI te permet de chercher tous les documents disponibles : livres imprimés, magazines, mais aussi des <strong>sites internet fiables, des vidéos et des audios</strong> sélectionnés par ta professeure documentaliste. Par quelle méthode veux-tu chercher ?",
+    next: [
+      { label: '🔍 Recherche simple (par mot-clé)',      intent: 'recherche_simple' },
+      { label: '🎯 Recherche avancée (par critères)',    intent: 'recherche_avancee' },
+      { label: '🗂️ Parcourir par catégories',           intent: 'decouvrir_fonds' },
+      { label: '⬅️ Retour au menu',                     intent: 'menu' },
+    ]
+  },
+
+  recherche_simple: {
+    text: "La <strong>recherche simple</strong>, c'est la barre de recherche unique sur la page d'accueil du catalogue. Tu tapes un mot (un titre, un auteur, un sujet...) et tu valides. 🔍<br><br>C'est rapide et pratique ! Si tu obtiens <em>trop de résultats</em>, tu peux les affiner ensuite avec les filtres à gauche (type de document, date, sujet...).<br><br>Tu peux accéder directement au catalogue ici : <a href='https://0720053s.esidoc.fr' target='_blank'>0720053s.esidoc.fr</a>",
+    next: [
+      { label: '🎯 Essayer la recherche avancée ?', intent: 'recherche_avancee' },
+      { label: '🔧 Affiner mes résultats',           intent: 'affiner_recherche' },
+      { label: '⬅️ Retour au menu',                 intent: 'menu' },
+    ]
+  },
+
+  recherche_avancee: {
+    text: "La <strong>recherche avancée</strong> te permet de combiner plusieurs critères à la fois pour être plus précis 🎯<br><br>Tu peux filtrer par :<br>• <strong>Type de document</strong> : Tous / Fictions / Documentaires / En ligne<br>• <strong>Date de parution</strong> : moins d'un mois, moins d'un an...<br>• <strong>Thèmes</strong> (mots-clés sujets)<br>• <strong>Auteurs</strong><br>• <strong>Titre</strong><br>• <strong>Natures</strong> (Romans, BD...) et <strong>Genres</strong> (Policiers, Fantastiques...)<br>• <strong>Éditeurs</strong>, <strong>Collections</strong>, <strong>Langues</strong>, <strong>EAN/ISBN</strong><br><br>👉 <a href='https://0720053s.esidoc.fr/recherche_avancee/' target='_blank'>Accéder à la recherche avancée</a>",
+    next: [
+      { label: '🔍 Voir la recherche simple',  intent: 'recherche_simple' },
+      { label: '🔧 Affiner mes résultats',      intent: 'affiner_recherche' },
+      { label: '⬅️ Retour au menu',            intent: 'menu' },
+    ]
+  },
+
+  affiner_recherche: {
+    text: "Une fois ta recherche lancée, tu peux <strong>affiner les résultats</strong> grâce aux filtres sur le côté. Par exemple pour les revues et magazines, tu peux filtrer par :<br><br>• <strong>Type de document</strong> (revues, journaux, magazines)<br>• <strong>Date de publication</strong> (2024, 2025, 2026...)<br>• <strong>Sujets</strong> (Internet, Biodiversité, Photographie, Astronomie...)<br>• <strong>Éditeurs</strong> (Milan Presse, Faton, Dupuis...)<br>• <strong>Emplacement</strong> : CDI / Réserve / Kiosque Orientation<br><br>💡 Plus tu précises, moins tu auras de résultats à trier !",
+    next: [
+      { label: '🎯 Recherche avancée',  intent: 'recherche_avancee' },
+      { label: '⬅️ Retour au menu',    intent: 'menu' },
+    ]
+  },
+
+  // ── COTES ─────────────────────────────────────────────────────────────────
+
+  cotes_general: {
+    text: "La <strong>cote</strong>, c'est l'étiquette collée sur le dos de chaque livre : elle indique son type et sa place dans le CDI. 📚<br><br>Quel genre de document cherches-tu ?",
+    next: [
+      { label: '📕 Fiction (romans, BD, mangas...)', intent: 'cotes_fiction' },
+      { label: '🔬 Documentaires (classement Dewey)', intent: 'cotes_documentaires' },
+      { label: '❓ Comment lire une cote ?',          intent: 'cotes_lire' },
+      { label: '⬅️ Retour au menu',                  intent: 'menu' },
+    ]
+  },
+
+  cotes_fiction: {
+    text: `Voici les cotes pour les œuvres de <strong>fiction</strong>. La cote est composée d'une <strong>lettre (ou lettres)</strong> + les <strong>3 premières lettres du nom de l'auteur</strong> :<br><br>${listCotesFiction()}<br><br>🔎 L'étiquette est collée sur le bas du dos du livre. Les livres sont rangés par ordre alphabétique d'auteur dans chaque section !`,
+    next: [
+      { label: '🔬 Voir les documentaires',      intent: 'cotes_documentaires' },
+      { label: '❓ Comment lire une cote ?',      intent: 'cotes_lire' },
+      { label: '🔍 Chercher dans le catalogue',  intent: 'recherche_choix' },
+      { label: '⬅️ Retour au menu',             intent: 'menu' },
+    ]
+  },
+
+  cotes_documentaires: {
+    text: `Les documentaires sont classés selon la <strong>classification Dewey</strong> (un système utilisé dans les bibliothèques et CDI du monde entier 🌍). La cote = <strong>numéro Dewey + 3 premières lettres de l'auteur</strong> :<br><br>${listCotesDoc()}<br><br>💡 Plus le numéro est précis, plus le sujet est spécifique. Ex : <strong>944 DUB</strong> pour un livre sur l\'Histoire de France de Duby.`,
+    next: [
+      { label: '📕 Voir la fiction',            intent: 'cotes_fiction' },
+      { label: '❓ Comment lire une cote ?',     intent: 'cotes_lire' },
+      { label: '🔍 Chercher dans le catalogue', intent: 'recherche_choix' },
+      { label: '⬅️ Retour au menu',            intent: 'menu' },
+    ]
+  },
+
+  cotes_lire: {
+    text: "Comment lire une cote ? C'est simple ! 😊<br><br><strong>Pour un roman</strong> : <code>R DUM</code><br>→ R = Roman, DUM = Dumas (Alexandre)<br><br><strong>Pour une BD / Manga</strong> : <code>BD NAR</code><br>→ BD = Bande dessinée, NAR = Naruto (auteur : Kishimoto)<br><br><strong>Pour un documentaire</strong> : <code>944 LAV</code><br>→ 944 = Histoire de France (Dewey), LAV = Lavisse (auteur)<br><br>📍 Les livres sont rangés dans les rayonnages du CDI dans l'ordre de leur cote. Tu peux aussi chercher par cote dans le catalogue en ligne !",
+    next: [
+      { label: '📕 Cotes fiction',         intent: 'cotes_fiction' },
+      { label: '🔬 Cotes documentaires',   intent: 'cotes_documentaires' },
+      { label: '⬅️ Retour au menu',       intent: 'menu' },
+    ]
+  },
+
+  // ── RESSOURCES EN LIGNE ────────────────────────────────────────────────────
+
+  ressources_en_ligne: {
+    text: "Le catalogue du CDI ne contient pas que des livres ! Ta professeure documentaliste a sélectionné des <strong>ressources numériques fiables</strong> pour t'aider dans tes recherches 🌐<br><br>Tu peux y trouver :<br>• Des <strong>sites internet</strong> vérifiés et recommandés<br>• Des <strong>vidéos</strong> éducatives<br>• Des <strong>ressources audio</strong> (livres à écouter...)<br>• Des <strong>bases de données</strong> et bibliothèques numériques<br><br>Que cherches-tu ?",
+    next: [
+      { label: '🎧 Livres à écouter',           intent: 'livres_ecouter' },
+      { label: '📖 Dictionnaires en ligne',      intent: 'dicos_en_ligne' },
+      { label: '🌐 Bibliothèques numériques',    intent: 'biblio_num' },
+      { label: '🖼️ Images et vidéos',           intent: 'images_videos' },
+      { label: '🔍 Chercher dans le catalogue', intent: 'recherche_choix' },
+      { label: '⬅️ Retour au menu',            intent: 'menu' },
+    ]
+  },
+
+  livres_ecouter: {
+    text: "🎧 <strong>Des livres à écouter</strong> sont disponibles depuis le catalogue du CDI ! C'est pratique pour suivre une histoire tout en faisant autre chose, ou pour les personnes qui préfèrent l'écoute à la lecture.<br><br>👉 <a href='https://0720053s.esidoc.fr/site/bienvenue-au-cdi-espace-eleves/trouver/des-livres-a-ecouter' target='_blank'>Accéder aux livres à écouter</a><br><br>Tu peux aussi chercher ces ressources dans le catalogue en filtrant par <em>type : En ligne</em> dans la recherche avancée.",
+    next: [
+      { label: '🌐 Autres ressources en ligne', intent: 'ressources_en_ligne' },
+      { label: '⬅️ Retour au menu',            intent: 'menu' },
+    ]
+  },
+
+  dicos_en_ligne: {
+    text: "📖 Le CDI donne accès à des <strong>dictionnaires et encyclopédies en ligne</strong>, sélectionnés et vérifiés par ta professeure documentaliste. Idéal pour tes recherches documentaires ou pour vérifier une définition !<br><br>👉 <a href='https://0720053s.esidoc.fr/site/bienvenue-au-cdi-espace-eleves/trouver/des-dictionnaires-et-des-encyclopedies' target='_blank'>Accéder aux dictionnaires et encyclopédies</a>",
+    next: [
+      { label: '🌐 Autres ressources en ligne', intent: 'ressources_en_ligne' },
+      { label: '⬅️ Retour au menu',            intent: 'menu' },
+    ]
+  },
+
+  biblio_num: {
+    text: "🌐 Des <strong>bibliothèques numériques</strong> sont accessibles depuis le CDI. Elles proposent des livres, documents et contenus en ligne que tu peux consulter depuis le collège.<br><br>👉 <a href='https://0720053s.esidoc.fr/site/bienvenue-au-cdi-espace-eleves/trouver/des-bibliotheques-numeriques' target='_blank'>Accéder aux bibliothèques numériques</a>",
+    next: [
+      { label: '🌐 Autres ressources en ligne', intent: 'ressources_en_ligne' },
+      { label: '⬅️ Retour au menu',            intent: 'menu' },
+    ]
+  },
+
+  images_videos: {
+    text: "🖼️ Le CDI propose des <strong>images et vidéos</strong> indexées et fiables pour illustrer tes exposés ou t'informer. Ces ressources ont été sélectionnées par ta professeure documentaliste.<br><br>👉 <a href='https://0720053s.esidoc.fr/site/bienvenue-au-cdi-espace-eleves/trouver/des-images-et-des-videos' target='_blank'>Accéder aux images et vidéos</a>",
+    next: [
+      { label: '🌐 Autres ressources en ligne', intent: 'ressources_en_ligne' },
+      { label: '⬅️ Retour au menu',            intent: 'menu' },
+    ]
+  },
+
+  // ── DÉCOUVRIR LE FONDS ─────────────────────────────────────────────────────
+
+  decouvrir_fonds: {
+    text: "Tu peux <strong>parcourir le catalogue par catégories</strong> pour découvrir ce que le CDI propose, sans avoir besoin de taper un mot précis 🗂️ Choisis une catégorie :",
+    next: [
+      { label: '📕 Romans, BD, fiction...',         intent: 'decouvrir_fiction' },
+      { label: '🔬 Livres documentaires',           intent: 'decouvrir_docs' },
+      { label: '📰 Revues & magazines',             intent: 'revues_magazines' },
+      { label: '📘 Dictionnaires, encyclopédies',   intent: 'decouvrir_usuels' },
+      { label: '📖 Manuels scolaires',              intent: 'decouvrir_manuels' },
+      { label: '⬅️ Retour au menu',               intent: 'menu' },
+    ]
+  },
+
+  decouvrir_fiction: {
+    text: "📕 Pour parcourir les <strong>livres de fiction</strong> du CDI, tu peux utiliser les sections du catalogue :<br><br>• <a href='https://0720053s.esidoc.fr/decouvrir/livresfiction' target='_blank'><strong>Romans, BD...</strong></a> — fiction générale<br>• <a href='https://0720053s.esidoc.fr/decouvrir/livresfiction2' target='_blank'><strong>Policiers, fantastiques...</strong></a> — genres particuliers<br><br>Tu y trouveras des romans, contes, albums, pièces de théâtre, poèmes, BD et mangas. Les livres sont cotés avec une lettre + les 3 premières lettres de l'auteur.",
+    next: [
+      { label: '📚 Comprendre les cotes fiction', intent: 'cotes_fiction' },
+      { label: '⭐ Coups de cœur du CDI',        intent: 'coups_de_coeur' },
+      { label: '⬅️ Retour',                      intent: 'decouvrir_fonds' },
+    ]
+  },
+
+  decouvrir_docs: {
+    text: "🔬 Pour parcourir les <strong>livres documentaires</strong>, tu peux utiliser :<br><br>• <a href='https://0720053s.esidoc.fr/decouvrir/livresdoc' target='_blank'><strong>Livres documentaires</strong></a> dans le catalogue<br><br>Les documentaires sont classés par la <strong>classification Dewey</strong> (numéros de 000 à 999). Tu veux que je t'explique les grandes catégories ?",
+    next: [
+      { label: '🔬 Voir les catégories Dewey',   intent: 'cotes_documentaires' },
+      { label: '⬅️ Retour',                     intent: 'decouvrir_fonds' },
+    ]
+  },
+
+  revues_magazines: {
+    text: "📰 Le CDI dispose d'une belle collection de <strong>revues, journaux et magazines</strong> ! On y trouve notamment :<br><br><em>Géo Ado, Okapi, Science & Vie Junior, Histoire Junior, Wapiti, Images Doc, Mon Quotidien, Le Monde des Ados, Je Bouquine, Spirou, Ouest France...</em><br><br>Tu peux <a href='https://0720053s.esidoc.fr/decouvrir/revjourmag' target='_blank'>parcourir tous les magazines du CDI</a> et filtrer par sujet, date, éditeur...<br><br>💡 Il y a aussi un <strong>Kiosque Orientation</strong> et une <strong>Étagère ONISEP</strong> si tu cherches des infos sur les métiers et les études !",
+    next: [
+      { label: '🎯 Affiner ma recherche',       intent: 'affiner_recherche' },
+      { label: '🎓 S\'informer sur l\'orientation', intent: 'orientation' },
+      { label: '⬅️ Retour',                    intent: 'decouvrir_fonds' },
+    ]
+  },
+
+  decouvrir_usuels: {
+    text: "📘 Les <strong>dictionnaires et encyclopédies</strong> (appelés «usuels») sont consultables au CDI. Tu peux aussi en trouver en ligne :<br><br>• En version <strong>imprimée</strong> : cherche dans le catalogue avec le type « Usuels »<br>• En version <strong>numérique</strong> : <a href='https://0720053s.esidoc.fr/decouvrir/usuels' target='_blank'>Consulter les usuels en ligne</a>",
+    next: [
+      { label: '🌐 Autres ressources en ligne', intent: 'ressources_en_ligne' },
+      { label: '⬅️ Retour',                   intent: 'decouvrir_fonds' },
+    ]
+  },
+
+  decouvrir_manuels: {
+    text: "📖 Les <strong>manuels scolaires</strong> sont également répertoriés dans le catalogue du CDI. Tu peux les consulter sur place ou vérifier leur disponibilité.<br><br>👉 <a href='https://0720053s.esidoc.fr/decouvrir/manuels' target='_blank'>Accéder aux manuels dans le catalogue</a>",
+    next: [
+      { label: '⬅️ Retour',  intent: 'decouvrir_fonds' },
+      { label: '🏠 Menu',    intent: 'menu' },
+    ]
+  },
+
+  // ── INFOS PRATIQUES ────────────────────────────────────────────────────────
+
+  infos_pratiques: {
+    text: "🏫 Voici les informations pratiques sur le <strong>CDI du collège Véron de Forbonnais</strong>. Que veux-tu savoir ?",
+    next: [
+      { label: '🕐 Horaires & personnel',       intent: 'horaires' },
+      { label: '📋 Conditions de prêt',          intent: 'conditions_pret' },
+      { label: '📏 Règles de vie',               intent: 'regles_vie' },
+      { label: '💡 Proposer un achat',           intent: 'suggestions_achat' },
+      { label: '👩‍🏫 Le rôle du prof-doc',       intent: 'prof_doc' },
+      { label: '⬅️ Retour au menu',            intent: 'menu' },
+    ]
+  },
+
+  horaires: {
+    text: "🕐 Pour connaître les <strong>horaires d'ouverture</strong> du CDI et le nom du personnel, consulte la page dédiée :<br><br>👉 <a href='https://0720053s.esidoc.fr/site/bienvenue-au-cdi-espace-eleves/informations-pratiques/les-horaires-le-personnel' target='_blank'>Horaires et personnel du CDI</a><br><br>En cas de doute, tu peux aussi te rendre directement au CDI pour demander à la professeure documentaliste !",
+    next: [
+      { label: '📋 Conditions de prêt',  intent: 'conditions_pret' },
+      { label: '⬅️ Retour',            intent: 'infos_pratiques' },
+    ]
+  },
+
+  conditions_pret: {
+    text: "📋 Tu veux emprunter un livre ? Voici ce qu'il faut savoir sur les <strong>conditions de prêt</strong> du CDI :<br><br>👉 <a href='https://0720053s.esidoc.fr/site/bienvenue-au-cdi-espace-eleves/informations-pratiques/les-conditions-de-pret' target='_blank'>Consulter les conditions de prêt</a><br><br>En général, tu peux aussi gérer tes emprunts depuis ton <strong>compte personnel</strong> sur le catalogue : voir tes prêts en cours, tes réservations et tes sélections.",
+    next: [
+      { label: '👤 Mon compte',          intent: 'mon_compte' },
+      { label: '🕐 Horaires',           intent: 'horaires' },
+      { label: '⬅️ Retour',            intent: 'infos_pratiques' },
+    ]
+  },
+
+  regles_vie: {
+    text: "📏 Le CDI est un espace de <strong>travail, de lecture et de recherche</strong>. Il y a des règles de vie pour que tout le monde puisse travailler dans de bonnes conditions.<br><br>👉 <a href='https://0720053s.esidoc.fr/site/bienvenue-au-cdi-espace-eleves/informations-pratiques/les-regles-de-vie-au-cdi' target='_blank'>Consulter les règles de vie au CDI</a>",
+    next: [
+      { label: '⬅️ Retour', intent: 'infos_pratiques' },
+    ]
+  },
+
+  suggestions_achat: {
+    text: "💡 Tu as envie de lire un livre qui n'est pas au CDI ? Tu peux faire une <strong>suggestion d'achat</strong> à ta professeure documentaliste !<br><br>👉 <a href='https://0720053s.esidoc.fr/site/bienvenue-au-cdi-espace-eleves/informations-pratiques/suggestions-d-achat' target='_blank'>Faire une suggestion d'achat</a><br><br>La professeure documentaliste gère les acquisitions selon la politique documentaire de l'établissement.",
+    next: [
+      { label: '⬅️ Retour', intent: 'infos_pratiques' },
+      { label: '🏠 Menu',   intent: 'menu' },
+    ]
+  },
+
+  prof_doc: {
+    text: "👩‍🏫 La <strong>professeure documentaliste</strong> gère le CDI selon la circulaire de missions de 2017. Ses missions incluent notamment :<br><br>• Former les élèves à la recherche d'information et à l'EMI (Éducation aux Médias et à l'Information)<br>• Sélectionner et organiser les ressources documentaires<br>• Accompagner les projets de lecture et les activités culturelles<br>• Gérer la politique documentaire de l'établissement<br><br>👉 <a href='https://0720053s.esidoc.fr/site/bienvenue-au-cdi-espace-eleves/informations-pratiques/les-missions-du-professeur-documentaliste' target='_blank'>En savoir plus sur ses missions</a>",
+    next: [
+      { label: '⬅️ Retour', intent: 'infos_pratiques' },
+    ]
+  },
+
+  mon_compte: {
+    text: "👤 Avec ton <strong>compte personnel</strong> sur le catalogue, tu peux :<br><br>• <a href='https://0720053s.esidoc.fr/moncompte/mesprets' target='_blank'>📚 Voir tes prêts et réservations</a><br>• <a href='https://0720053s.esidoc.fr/moncompte/mesavis' target='_blank'>⭐ Consulter et laisser tes avis</a><br>• <a href='https://0720053s.esidoc.fr/moncompte/mespaniers' target='_blank'>🗂️ Retrouver tes sélections</a><br>• <a href='https://0720053s.esidoc.fr/moncompte/mesrecherches' target='_blank'>🔍 Revoir tes recherches sauvegardées</a><br><br>Connecte-toi sur <a href='https://0720053s.esidoc.fr/moncompte' target='_blank'>ton compte</a> avec tes identifiants.",
+    next: [
+      { label: '⬅️ Retour au menu', intent: 'menu' },
+    ]
+  },
+
+  // ── APPRENDRE ──────────────────────────────────────────────────────────────
+
+  apprendre: {
+    text: "📖 Le CDI propose des ressources pour t'apprendre à mieux chercher et t'informer. Que veux-tu apprendre ?",
+    next: [
+      { label: '🔍 Chercher sur Internet',      intent: 'apprendre_internet' },
+      { label: '📝 Citer ses sources',           intent: 'apprendre_sources' },
+      { label: '📚 Utiliser la base du CDI',    intent: 'apprendre_base' },
+      { label: '🎮 Réviser l\'EMI (6e)',         intent: 'apprendre_emi' },
+      { label: '⬅️ Retour au menu',            intent: 'menu' },
+    ]
+  },
+
+  apprendre_internet: {
+    text: "🔍 Savoir <strong>chercher sur Internet de façon efficace et critique</strong>, c'est une compétence essentielle ! Le CDI propose une ressource pour t'y aider :<br><br>👉 <a href='https://0720053s.esidoc.fr/site/bienvenue-au-cdi-espace-eleves/apprendre-a/chercher-sur-internet' target='_blank'>Apprendre à chercher sur Internet</a><br><br>💡 N'oublie pas que le catalogue du CDI référence aussi des <strong>sites vérifiés et fiables</strong> recommandés par ta professeure documentaliste !",
+    next: [
+      { label: '📝 Citer ses sources',    intent: 'apprendre_sources' },
+      { label: '⬅️ Retour',            intent: 'apprendre' },
+    ]
+  },
+
+  apprendre_sources: {
+    text: "📝 <strong>Citer ses sources</strong>, c'est obligatoire quand tu fais un exposé ou une recherche ! Cela montre où tu as trouvé tes informations et permet aux autres de vérifier.<br><br>👉 <a href='https://0720053s.esidoc.fr/site/bienvenue-au-cdi-espace-eleves/apprendre-a/citer-ses-sources' target='_blank'>Apprendre à citer ses sources</a>",
+    next: [
+      { label: '🔍 Chercher sur Internet', intent: 'apprendre_internet' },
+      { label: '⬅️ Retour',              intent: 'apprendre' },
+    ]
+  },
+
+  apprendre_base: {
+    text: "📚 Pour bien utiliser le <strong>catalogue du CDI</strong> (chercher, filtrer, faire une recherche avancée...), une aide est disponible :<br><br>👉 <a href='https://0720053s.esidoc.fr/site/bienvenue-au-cdi-espace-eleves/apprendre-a/utiliser-la-base-du-cdi' target='_blank'>Apprendre à utiliser la base du CDI</a>",
+    next: [
+      { label: '🔍 Recherche simple',    intent: 'recherche_simple' },
+      { label: '🎯 Recherche avancée',   intent: 'recherche_avancee' },
+      { label: '⬅️ Retour',            intent: 'apprendre' },
+    ]
+  },
+
+  apprendre_emi: {
+    text: "🎮 Les élèves de <strong>6e</strong> ont des cours d'EMI (Éducation aux Médias et à l'Information). Un <strong>jeu sérieux</strong> est disponible pour réviser :<br><br>👉 <a href='https://0720053s.esidoc.fr/site/bienvenue-au-cdi-espace-eleves/apprendre-a/un-serious-game-pour-reviser' target='_blank'>Réviser l'EMI avec le serious game</a><br><br>Il y a aussi des ressources pour les <strong>5e</strong> sur les thèmes : chronologie des moyens de communication, Le scribe accroupi, Internet et vie privée...",
+    next: [
+      { label: '⬅️ Retour', intent: 'apprendre' },
+      { label: '🏠 Menu',   intent: 'menu' },
+    ]
+  },
+
+  // ── ACTIVITÉS & ÉVÉNEMENTS ─────────────────────────────────────────────────
+
+  coups_de_coeur: {
+    text: "⭐ La professeure documentaliste partage ses <strong>coups de cœur</strong> : des lectures qu'elle recommande particulièrement. C'est une belle façon de découvrir un livre qu'on n'aurait pas choisi seul !<br><br>👉 <a href='https://0720053s.esidoc.fr/site/bienvenue-au-cdi-espace-eleves/decouvrir-2/les-coups-de-coeur-du-cdi' target='_blank'>Voir les coups de cœur du CDI</a>",
+    next: [
+      { label: '📕 Explorer la fiction',   intent: 'decouvrir_fiction' },
+      { label: '⬅️ Retour au menu',       intent: 'menu' },
+    ]
+  },
+
+  orientation: {
+    text: "🎓 Tu cherches des informations sur ton <strong>orientation</strong> ? Le CDI dispose d'un <strong>Kiosque Orientation</strong> et d'une <strong>Étagère ONISEP</strong> avec des magazines et guides (Les Cahiers de l'ONISEP, Les Dossiers de l'ONISEP, Zoom sur les métiers...).<br><br>• <a href='https://0720053s.esidoc.fr/site/bienvenue-au-cdi-espace-eleves/s-informer-sur/l-orientation' target='_blank'>👉 S'informer sur l'orientation</a><br>• <a href='https://0720053s.esidoc.fr/site/cordees-de-la-reussite-2' target='_blank'>📚 Cordées de la Réussite</a> — sélection pour dépasser les préjugés sur l'orientation",
+    next: [
+      { label: '💡 Faire une suggestion d\'achat', intent: 'suggestions_achat' },
+      { label: '⬅️ Retour au menu',              intent: 'menu' },
+    ]
+  },
+
+  mangas: {
+    text: "🎌 Le CDI a tout un espace consacré aux <strong>mangas</strong> ! Les mangas et BD sont cotés <strong>BD + 3 premières lettres de l'auteur</strong>.<br><br>Tu peux aussi explorer la section mangas du site :<br>• <a href='https://0720053s.esidoc.fr/site/a-la-decouverte-des-mangas/decouvrir-4/comment-fait-on-un-manga' target='_blank'>🎌 Comment fait-on un manga ?</a><br>• <a href='https://0720053s.esidoc.fr/site/a-la-decouverte-des-mangas/apprendre-a-3/rédiger-une-critique-litteraire-2' target='_blank'>✍️ Rédiger une critique littéraire</a><br>• <a href='https://0720053s.esidoc.fr/site/a-la-decouverte-des-mangas/apprendre-a-3/faire-de-l-origami' target='_blank'>🦢 Faire de l'origami</a><br>• <a href='https://0720053s.esidoc.fr/site/a-la-decouverte-des-mangas/apprendre-a-3/ecrire-son-prenom-en-japonais' target='_blank'>✏️ Écrire son prénom en japonais</a>",
+    next: [
+      { label: '📚 Cotes BD & manga',   intent: 'cotes_fiction' },
+      { label: '⬅️ Retour au menu',    intent: 'menu' },
+    ]
+  },
+
+  defis_babelio: {
+    text: "📚 Le CDI participe aux <strong>Défis Babelio</strong> ! Il y a deux sélections :<br><br>• <a href='https://0720053s.esidoc.fr/site/les-defis-babelio/la-selection/voici-les-livres-de-la-selection-presents-au-cdi' target='_blank'>📗 Défi Babelio Junior</a><br>• <a href='https://0720053s.esidoc.fr/site/les-defis-babelio/la-selection/voici-les-livres-de-la-selection-presents-au--2' target='_blank'>📘 Défi Babelio Ado+</a><br><br>Tu peux aussi participer à des activités comme :<br>• <a href='https://0720053s.esidoc.fr/site/les-defis-babelio/les-activites/realiser-un-book-trailer' target='_blank'>🎬 Réaliser un book trailer</a><br>• <a href='https://0720053s.esidoc.fr/site/les-defis-babelio/les-activites/concours-de-bookface' target='_blank'>📸 Concours de Bookface</a><br>• <a href='https://0720053s.esidoc.fr/site/les-defis-babelio/les-activites/realiser-une-video-a-la-maniere-d-un-booktubeur' target='_blank'>🎥 Devenir booktubeur</a>",
+    next: [
+      { label: '⭐ Coups de cœur',    intent: 'coups_de_coeur' },
+      { label: '⬅️ Retour au menu',  intent: 'menu' },
+    ]
+  },
+
+  // ── TROUVER UN LIVRE PRÉCIS ────────────────────────────────────────────────
+
+  disponibilite: {
+    text: "Je ne connais pas le contenu exact du fonds du CDI (quels titres précis sont disponibles ou empruntés). Mais je peux t'aider à chercher ! 😊<br><br>La meilleure façon est de faire toi-même une recherche dans le catalogue :<br>• Tape le <strong>titre</strong> ou le <strong>nom de l'auteur</strong> dans la barre de recherche<br>• Ou utilise la <strong>recherche avancée</strong> pour préciser un sujet ou un type de document<br><br>Sais-tu de quel <strong>type de document</strong> il s'agit (roman, BD, documentaire...) ?",
+    next: [
+      { label: '🔍 Faire une recherche simple',   intent: 'recherche_simple' },
+      { label: '🎯 Recherche avancée',            intent: 'recherche_avancee' },
+      { label: '📚 Comprendre les cotes',         intent: 'cotes_general' },
+      { label: '⬅️ Retour au menu',              intent: 'menu' },
+    ]
+  },
+
+  // ── FALLBACK ───────────────────────────────────────────────────────────────
+
+  fallback: {
+    text: "Hmm, je n'ai pas bien compris ta question 🤔 Mais pas de panique ! Voici ce que je peux t'aider à trouver. Choisis une option ou reformule ta question différemment :",
+    next: MAIN_MENU
+  }
+};
+
+// ── INTENT MATCHING ──────────────────────────────────────────────────────────
+
+function normalize(s){
+  return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+}
+
+// ── MOT-CLÉ NON RECONNU : ON GUIDE PLUTÔT QUE DE DIRE "JE N'AI PAS COMPRIS" ──
+// Public 10-15 ans : peu de réflexe pour reformuler seul. Plutôt que le
+// fallback générique, on transforme le mot tapé en question à choix simple.
+
+function truncateWord(raw){
+  const w = raw.trim();
+  return w.length > 40 ? w.slice(0, 40) + '…' : w;
+}
+
+function buildUnknownKeywordClarify(raw){
+  const word = escapeHtml(truncateWord(raw));
+  return {
+    text: `Je ne connais pas de réponse toute prête sur <strong>« ${word} »</strong>, mais on va trouver ça ensemble ! 🔎<br><br>Tu cherches plutôt :`,
+    next: [
+      { label: '💡 Des infos rapides',     action: () => buildUnknownInfoAnswer(word) },
+      { label: '📚 Un documentaire',       action: () => buildUnknownDocClarify(word) },
+      { label: '📖 Un roman ou une BD',    action: () => buildUnknownFictionAnswer(word) },
+      { label: '🤷 Autre chose',           intent: 'menu' },
+    ]
+  };
+}
+
+function buildUnknownInfoAnswer(word){
+  return withFollowUp({
+    text: `Pour une vue d'ensemble rapide sur <strong>« ${word} »</strong> :<br>` +
+      `• Regarde les <strong>dictionnaires/encyclopédies en ligne</strong><br>` +
+      `• Ou tape <strong>« ${word} »</strong> directement dans la recherche du catalogue pour voir tout ce que le CDI a sur ce sujet`,
+    next: [
+      { label: '📖 Dictionnaires en ligne', intent: 'dicos_en_ligne' },
+      { label: '🎯 Recherche avancée',      intent: 'recherche_avancee' },
+    ]
+  });
+}
+
+function buildUnknownDocClarify(word){
+  return {
+    text: `Pas de souci ! Pour te donner une piste de rayon, ça rentre dans quel domaine selon toi ?`,
+    next: [
+      { label: '🔬 Sciences & nature',      action: () => buildUnknownDocDomainAnswer(word, '500') },
+      { label: '🏺 Histoire & géographie',  action: () => buildUnknownDocDomainAnswer(word, '900') },
+      { label: '👥 Société & métiers',      action: () => buildUnknownDocDomainAnswer(word, '300') },
+      { label: '🎨 Arts, sport & loisirs',  action: () => buildUnknownDocDomainAnswer(word, '700') },
+      { label: '💻 Techno & informatique',  action: () => buildUnknownDocDomainAnswer(word, '000') },
+      { label: '🙏 Religions & mythologie', action: () => buildUnknownDocDomainAnswer(word, '200') },
+      { label: '🤷 Je ne sais pas',         intent: 'cotes_documentaires' },
+    ]
+  };
+}
+
+function buildUnknownDocDomainAnswer(word, code){
+  const domainLabel = domainForCode(code);
+  return withFollowUp({
+    text: `📚 Direction le rayon coté <strong>${code}</strong> (${domainLabel}) pour chercher un documentaire sur <strong>« ${word} »</strong> ! ⚠️ C'est une piste de départ — confirme en tapant <strong>« ${word} »</strong> dans la recherche du catalogue (filtre Documentaire).`,
+    next: [
+      { label: '🎯 Recherche avancée',           intent: 'recherche_avancee' },
+      { label: '🔬 Voir toutes les cotes Dewey', intent: 'cotes_documentaires' },
+    ]
+  });
+}
+
+function buildUnknownFictionAnswer(word){
+  return withFollowUp({
+    text: `📖 Les romans et BD sont rangés par <strong>auteur</strong>, pas par thème — donc impossible de te donner une cote précise pour <strong>« ${word} »</strong>.<br><br>` +
+      `Le plus simple : tape <strong>« ${word} »</strong> dans la recherche du catalogue (filtre Roman ou BD), le mot-clé sujet fera le travail !`,
+    next: [
+      { label: '🎯 Recherche avancée',            intent: 'recherche_avancee' },
+      { label: '📚 Comprendre les cotes fiction', intent: 'cotes_fiction' },
+    ]
+  });
+}
+
+// ── TÂCHES SCOLAIRES FLOUES : ON GUIDE PAR QUESTIONS SUCCESSIVES ────────────
+// "Je dois faire un exposé" / "je dois lire un livre" → on cerne le besoin
+// avant de pouvoir aider, comme le ferait un professeur documentaliste.
+
+const TASK_EXPOSE_TRIGGERS  = ['expose', 'presentation orale', 'dossier sur', 'recherche scolaire', 'devoir sur'];
+const TASK_LECTURE_TRIGGERS = ['dois lire', 'livre a lire', 'lecture obligatoire', 'lire un livre', 'choisir un livre', 'livre pour les vacances'];
+
+function buildExposeAsk(){
+  pendingContext = 'expose';
+  return {
+    text: `Ah, super programme ça ! 📋 Un exposé sur quel sujet ?`,
+    next: [{ label: '⬅️ Retour au menu', intent: 'menu' }]
+  };
+}
+
+function buildLectureAsk(){
+  pendingContext = 'lecture';
+  return {
+    text: `Chouette ! 📖 Tu as déjà un genre en tête (policier, fantastique, aventure...), ou je t'aide à choisir ?`,
+    next: [
+      { label: '⭐ Aide-moi à choisir',  intent: 'coups_de_coeur' },
+      { label: '⬅️ Retour au menu',     intent: 'menu' },
+    ]
+  };
+}
+
+// ── PROPOS HORS SUJET / INAPPROPRIÉS ─────────────────────────────────────────
+// Public 10-15 ans : on recadre toujours avec bienveillance, sans moraliser,
+// et on ramène vite vers ce que le chatbot sait faire.
+
+const INAPPROPRIATE_TRIGGERS = ['caca', 'pipi', 'prout', 'fesses', 'merde', 'peter', 'roter', 'connard', 'pute', 'nique'];
+
+function containsWord(t, word){
+  return new RegExp(`\\b${word}\\b`).test(t);
+}
+
+function isInappropriate(t){
+  return INAPPROPRIATE_TRIGGERS.some(w => containsWord(t, w));
+}
+
+function buildInappropriateRedirect(){
+  return {
+    text: `Hmm, ça n'a pas trop sa place dans cette discussion 😅 Si tu as besoin d'aller aux toilettes ou d'autre chose, demande directement à un adulte du collège.<br><br>Moi je suis plutôt là pour t'aider à trouver des livres ou des infos au CDI ! Tu cherches une lecture, ou des infos sur un sujet ?`,
+    next: MAIN_MENU
+  };
+}
+
+function matchIntent(raw){
+  const t = normalize(raw);
+  if (!t) return 'fallback';
+
+  // Propos inapproprié → recadrage bienveillant, prioritaire sur tout le reste
+  if (isInappropriate(t)) { pendingContext = null; return buildInappropriateRedirect(); }
+
+  // Réponse à une question contextuelle posée juste avant (exposé / lecture)
+  if (pendingContext === 'expose') {
+    pendingContext = null;
+    const theme = findDocTheme(t);
+    if (theme) return buildThemeDocAnswer(theme);
+    return buildUnknownDocClarify(escapeHtml(truncateWord(raw)));
+  }
+  if (pendingContext === 'lecture') {
+    pendingContext = null;
+    const genre = findFictionGenre(t);
+    if (genre) return buildFictionGenreResponse(genre);
+    return buildUnknownFictionAnswer(escapeHtml(truncateWord(raw)));
+  }
+
+  // Salutations
+  if (['bonjour','salut','coucou','hello','bonsoir','hey','bjr','slt'].some(k => t.includes(k))) return 'salutation';
+
+  // Remerciements
+  if (['merci','super','parfait','genial','top','nickel','cool','thanks'].some(k => t.includes(k))) return 'merci';
+
+  // Menu
+  if (t === 'menu' || t === 'retour' || t === 'accueil') return 'menu';
+
+  // Tâche scolaire floue : exposé/devoir, sujet pas encore précisé (ou déjà
+  // donné dans le même message, ex : "je dois faire un exposé sur l'écologie")
+  if (TASK_EXPOSE_TRIGGERS.some(k => t.includes(k))) {
+    const theme = findDocTheme(t);
+    if (theme) return buildThemeDocAnswer(theme);
+    return buildExposeAsk();
+  }
+
+  // Tâche scolaire floue : lecture obligatoire, genre pas encore précisé
+  if (TASK_LECTURE_TRIGGERS.some(k => t.includes(k))) {
+    const genre = findFictionGenre(t);
+    if (genre) return buildFictionGenreResponse(genre);
+    return buildLectureAsk();
+  }
+
+  // Thème documentaire détecté → réponse guidée avec cote Dewey + mots-clés
+  const docTheme = findDocTheme(t);
+  if (docTheme) return buildThemeDocResponse(docTheme);
+
+  // Genre de fiction détecté → réponse guidée vers la bonne section
+  const ficGenre = findFictionGenre(t);
+  if (ficGenre) return buildFictionGenreResponse(ficGenre);
+
+  // Recherche
+  if (t.includes('avancee') || (t.includes('avance') && t.includes('recherch'))) return 'recherche_avancee';
+  if (t.includes('recherch') && t.includes('simple')) return 'recherche_simple';
+  if (t.includes('affiner') || t.includes('filtrer') || t.includes('trop de result')) return 'affiner_recherche';
+  if (t.includes('recherch') || t.includes('cherch') || t.includes('trouver')) {
+    // Plus de précision ?
+    if (['manga','bd','bande dessinee','comics'].some(k => t.includes(k))) return 'mangas';
+    if (['roman','livre','bouquin'].some(k => t.includes(k))) return 'disponibilite';
+    if (['magazine','revue','journal','presse'].some(k => t.includes(k))) return 'revues_magazines';
+    if (['internet','site','web','numerique','en ligne'].some(k => t.includes(k))) return 'ressources_en_ligne';
+    return 'recherche_choix';
+  }
+
+  // Cotes / classement
+  if (['cote','cotes','classement','rangement','classification','etiquette','dewey','classer'].some(k => t.includes(k))) return 'cotes_general';
+  if (['fiction','roman','histoire','conte','poesie','theatre','nouvelle'].some(k => t.includes(k)) && !t.includes('recherch')) return 'cotes_fiction';
+
+  // Manga / BD
+  if (['manga','bd','bande dessinee','comics','anime','otaku'].some(k => t.includes(k))) return 'mangas';
+
+  // Ressources numériques
+  if (['ecouter','audio','livre audio','podcast'].some(k => t.includes(k))) return 'livres_ecouter';
+  if (['diction','encyclop','usuel','larousse','robert'].some(k => t.includes(k))) return 'dicos_en_ligne';
+  if (['image','video','illustration','photo'].some(k => t.includes(k))) return 'images_videos';
+  if (['numerique','en ligne','internet','site','web','ressource'].some(k => t.includes(k))) return 'ressources_en_ligne';
+  if (['bibliotheque','biblio'].some(k => t.includes(k))) return 'biblio_num';
+
+  // Découvrir le fonds
+  if (['decouvrir','parcourir','explorer','voir','catalogue'].some(k => t.includes(k))) return 'decouvrir_fonds';
+  if (['magazine','revue','journal','presse','okapi','geo ado','wapiti'].some(k => t.includes(k))) return 'revues_magazines';
+  if (['documentaire','doc'].some(k => t.includes(k))) return 'cotes_documentaires';
+
+  // Infos pratiques
+  if (['horaire','heure','ouverture','fermeture','quand'].some(k => t.includes(k))) return 'horaires';
+  if (['pret','emprunt','emprunter','rendre','reserver','reservation','exemplaire','disponible'].some(k => t.includes(k))) return 'conditions_pret';
+  if (['regle','vie','comportement'].some(k => t.includes(k))) return 'regles_vie';
+  if (['suggestion','achat','commander','proposer'].some(k => t.includes(k))) return 'suggestions_achat';
+  if (['prof','documentaliste','prof doc','prof-doc','enseignant'].some(k => t.includes(k))) return 'prof_doc';
+  if (['info','infos','pratique','cdi'].some(k => t.includes(k))) return 'infos_pratiques';
+
+  // Compte
+  if (['compte','mon compte','mes prets','mes reservations','identifiant','connexion'].some(k => t.includes(k))) return 'mon_compte';
+
+  // Apprendre
+  if (['source','citer','citation','bibliographie'].some(k => t.includes(k))) return 'apprendre_sources';
+  if (['emi','education aux medias','information'].some(k => t.includes(k))) return 'apprendre_emi';
+  if (['apprendre','formation','tutoriel','aide'].some(k => t.includes(k))) return 'apprendre';
+
+  // Orientation / santé
+  if (['orientation','metier','avenir','onisep','lycee'].some(k => t.includes(k))) return 'orientation';
+
+  // Activités
+  if (['babelio','defi'].some(k => t.includes(k))) return 'defis_babelio';
+  if (['coup de coeur','recommand','conseil','suggestion lecture'].some(k => t.includes(k))) return 'coups_de_coeur';
+
+  // Disponibilité d'un titre
+  if (['avez vous','y a t il','existe t il','avez-vous','ce livre','tel livre','disponible','pas au cdi'].some(k => t.includes(k))) return 'disponibilite';
+
+  return buildUnknownKeywordClarify(raw);
+}
+
+// ── MOTEUR D'AFFICHAGE ────────────────────────────────────────────────────────
+
+function formatText(text){
+  // Markdown bold et sauts de ligne — les liens HTML restent tels quels
+  return text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+}
+
+function escapeHtml(str){
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+const messagesEl    = document.getElementById('chat-messages');
+const quickRepliesEl = document.getElementById('quick-replies');
+const chatForm      = document.getElementById('chat-form');
+const chatInput     = document.getElementById('chat-input');
+const raf = (typeof window !== 'undefined' && window.requestAnimationFrame)
+  ? window.requestAnimationFrame.bind(window)
+  : (cb) => setTimeout(cb, 0);
+
+function appendMessage(sender, html){
+  const div = document.createElement('div');
+  div.className = `message ${sender}`;
+  div.innerHTML = html;
+  messagesEl.appendChild(div);
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+
+function showTyping(){
+  const div = document.createElement('div');
+  div.className = 'message bot typing';
+  div.id = 'typing-indicator';
+  div.innerHTML = '<span></span><span></span><span></span>';
+  messagesEl.appendChild(div);
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+
+function hideTyping(){
+  const el = document.getElementById('typing-indicator');
+  if (el) el.remove();
+}
+
+function setQuickReplies(list){
+  quickRepliesEl.innerHTML = '';
+  (list || []).forEach(item => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'quick-reply';
+    btn.textContent = item.label;
+    btn.addEventListener('click', () => {
+      quickRepliesEl.innerHTML = '';
+      appendMessage('user', escapeHtml(item.label));
+      // Un clic sur une bulle structure la suite : on abandonne toute question
+      // ouverte en attente de réponse libre (exposé/lecture).
+      pendingContext = null;
+      // item.action : étape suivante construite dynamiquement (guidage thématique
+      // progressif). item.intent : clé statique classique dans RESPONSES.
+      respond(typeof item.action === 'function' ? item.action() : item.intent);
+    });
+    quickRepliesEl.appendChild(btn);
+  });
+  // Les réponses rapides peuvent occuper plusieurs lignes et réduire la hauteur
+  // visible de la zone de messages (elle est en flex:1, les bulles en taille
+  // fixe) : on attend le rendu réel (rAF) puis on re-scroll, sinon le bas du
+  // dernier message reste caché derrière/au-dessus des bulles.
+  raf(() => {
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  });
+}
+
+function respond(intentOrData){
+  // intentOrData est soit une clé texte vers RESPONSES (boutons de réponse rapide,
+  // intents classiques), soit un objet {text, next} déjà construit dynamiquement
+  // (ex : guidage thématique basé sur la saisie libre de l'élève).
+  const r = (typeof intentOrData === 'object' && intentOrData !== null)
+    ? intentOrData
+    : (RESPONSES[intentOrData] || RESPONSES.fallback);
+  showTyping();
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const delay = reduceMotion ? 0 : 480;
+  setTimeout(() => {
+    hideTyping();
+    appendMessage('bot', formatText(r.text));
+    setQuickReplies(r.next);
+  }, delay);
+}
+
+function sendMessage(){
+  const value = chatInput.value.trim();
+  if (!value) return;
+  appendMessage('user', escapeHtml(value));
+  chatInput.value = '';
+  quickRepliesEl.innerHTML = '';
+  respond(matchIntent(value));
+}
+
+// On n'utilise PAS l'événement "submit" du formulaire : certains environnements
+// (iframes sandboxées, aperçus d'artefacts...) bloquent la soumission native des
+// formulaires par sécurité. On gère donc l'envoi via le clic sur le bouton et la
+// touche Entrée dans le champ de texte, ce qui fonctionne partout.
+const chatSendBtn = document.getElementById('chat-send');
+chatSendBtn.addEventListener('click', (e) => {
+  e.preventDefault();
+  sendMessage();
+});
+chatInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    sendMessage();
+  }
+});
+// Garde-fou : si jamais le formulaire est tout de même soumis (Enter capté par
+// le navigateur avant notre listener, autocomplete, etc.), on bloque la
+// navigation et on délègue à sendMessage() pour éviter tout rechargement de page.
+chatForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  sendMessage();
+});
+
+// Message d'accueil
+appendMessage('bot', formatText(RESPONSES.intro.text));
+setQuickReplies(RESPONSES.intro.next);
+</script>
+
+</body>
+</html>
